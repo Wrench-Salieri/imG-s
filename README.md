@@ -1,2 +1,2 @@
 # imG-s
-Submission for thwe NASA Space App Challenge Athens Local Event
+Submission for the NASA Space App Challenge Athens Local Event
