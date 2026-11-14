@@ -33,11 +33,9 @@ The project relies entirely on scientific Python libraries for signal processing
 * **Requests:** For fetching real-time ISS telemetry and orbital tracking feeds.
 
 
-space-mri-simulator/
-│
-├── mri_simulator.py       # Core SpaceMRISimulator class (Physics, DSP, SWaP metrics)
-├── mission_control.py     # Live ISS Telemetry Connector (SAMS-II & orbital tracking)
-├── main.py                # Central execution script linking Design & Mission modes
-├── requirements.txt       # Project dependencies
-└── README.md              # Documentation
-
+📦 space-mri-simulator
+ ┣ 🧠 mri_simulator.py       # Core Physics & DSP Engine (K-space, Rician noise, SWaP metrics)
+ ┣ 🛰️ mission_control.py     # Live ISS Telemetry Connector (SAMS-II vibrations & SAA tracking)
+ ┣ 🚀 main.py                # FastAPI / Central execution pipeline linking Design & Mission modes
+ ┣ 📦 requirements.txt       # Python scientific & backend dependencies
+ ┗ 📖 README.md              # Project overview, mathematical equations & setup guide
