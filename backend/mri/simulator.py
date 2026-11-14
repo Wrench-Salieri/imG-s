@@ -41,7 +41,7 @@ class SpaceMRISimulator:
 
     def apply_rician_noise(self, complex_image: np.ndarray, b0_tesla: float,
                            scan_averaging: int) -> np.ndarray:
-        base_sigma = 0.03 / max(b0_tesla, 0.05)
+        base_sigma = 0.0003 / max(b0_tesla, 0.05)
         noise_level = base_sigma / np.sqrt(max(scan_averaging, 1))
 
         noise_real = np.random.normal(0, noise_level, complex_image.shape)

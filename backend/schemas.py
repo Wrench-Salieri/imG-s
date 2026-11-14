@@ -1,6 +1,6 @@
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, computed_field, field_validator
 
-from mri.parameters import PARAMS_BY_NAME
+from mri.parameters import PARAMS_BY_NAME, SSIM_MAX_ACCEPTABLE, SSIM_MIN_ACCEPTABLE
 
 
 def _limits(name: str):
@@ -62,6 +62,11 @@ class Metrics(BaseModel):
     Power_W: float
     ISS_Rack_Compatible: bool
 
+    @computed_field
+    @property
+    def SSIM_Compatible(self) -> bool:
+        return SSIM_MIN_ACCEPTABLE <= self.SSIM <= SSIM_MAX_ACCEPTABLE
+
 
 class ImagePair(BaseModel):
     ideal: list[list[float]]
@@ -121,3 +126,5 @@ class ParametersResponse(BaseModel):
     groups: dict[str, list[str]]
     iss_rack_max_volume_m3: float
     iss_rack_max_weight_kg: float
+    ssim_min: float
+    ssim_max: float

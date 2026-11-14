@@ -75,6 +75,8 @@ def show_results(simulation, meta, prefix):
     simulated = np.array(simulation["images"]["simulated"])
     max_volume = meta["iss_rack_max_volume_m3"]
     max_weight = meta["iss_rack_max_weight_kg"]
+    max_ssim = meta["ssim_max"]
+    min_ssim = meta["ssim_min"]
 
     a, b, c = st.columns(3)
     a.metric("SSIM", f"{metrics['SSIM']:.3f}",
@@ -97,6 +99,16 @@ def show_results(simulation, meta, prefix):
     else:
         st.error("This scanner does not fit an ISS rack. Reduce the bore, the length "
                  "or the field strength.")
+    ssim = metrics["SSIM"]
+    if metrics["SSIM_Compatible"]:
+        st.success(f"Scan quality is in the acceptable range "
+                   f"(SSIM {ssim:.2f}, target {min_ssim:.2f} to {max_ssim:.2f}).")
+    elif ssim < min_ssim:
+        st.error(f"Scan quality is too low (SSIM {ssim:.2f}, minimum {min_ssim:.2f}). "
+                 f"Reduce the vibration or increase the averaging.")
+    else:
+        st.warning(f"Scan quality is above the target range (SSIM {ssim:.2f}, "
+                   f"maximum {max_ssim:.2f}).")
 
     left, middle, right = st.columns(3)
     left.markdown("**Ideal phantom**")
