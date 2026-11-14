@@ -67,6 +67,8 @@ class ImagePair(BaseModel):
     ideal: list[list[float]]
     simulated: list[list[float]]
 
+class PhantomInfo(BaseModel):
+    name: str
 
 class SimulationResponse(BaseModel):
     metrics: Metrics

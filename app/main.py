@@ -126,6 +126,35 @@ for group, names in meta["groups"].items():
             cast(spec["default"]), cast(spec["step"]), help=spec["help"], key=name,
         )
 
+st.sidebar.subheader("Test image")
+phantom = call_api(api_client.get_phantom_info)
+if phantom is not None:
+    st.sidebar.caption(f"Current image: {phantom['name']}")
+
+uploader_key = f"phantom_uploader_{st.session_state.get('uploader_n', 0)}"
+uploaded = st.sidebar.file_uploader(
+    "Upload your own image", type=["png", "jpg", "jpeg", "npy"], key=uploader_key,
+    help="A grayscale MRI slice works best. It is cut to a square and resized to 128 x 128.",
+)
+if uploaded is not None:
+    token = f"{uploaded.name}:{uploaded.size}"
+    if st.session_state.get("phantom_token") != token:
+        if call_api(api_client.upload_phantom, uploaded.name, uploaded.getvalue()) is not None:
+            st.session_state["phantom_token"] = token
+            st.session_state.pop("mission", None)      # an old Mission Control result shows the old image
+            st.cache_data.clear()                      # cached simulations belong to the old image
+            st.rerun()
+
+if st.sidebar.button("Use the default image"):
+    if call_api(api_client.reset_phantom) is not None:
+        st.session_state["uploader_n"] = st.session_state.get("uploader_n", 0) + 1   # empties the upload box
+        st.session_state.pop("phantom_token", None)
+        st.session_state.pop("mission", None)
+        st.cache_data.clear()
+        st.rerun()
+        
+seed = 42
+
 st.title("imG's MRI Designer (name subject to change)")
 st.caption("A portable MRI designer for the ISS.")
 

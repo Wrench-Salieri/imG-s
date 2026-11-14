@@ -55,3 +55,13 @@ def sweep(params: dict, seed: int, parameter: str, points: int) -> dict:
 def mission(design: dict, seed: int) -> dict:
     return _call("POST", "/mission/simulate", json={**design, "noise_seed": seed})
 
+def get_phantom_info() -> dict:
+    return _call("GET", "/phantom")
+
+
+def upload_phantom(filename: str, content: bytes) -> dict:
+    return _call("POST", "/phantom", files={"file": (filename, content)})
+
+
+def reset_phantom() -> dict:
+    return _call("DELETE", "/phantom")

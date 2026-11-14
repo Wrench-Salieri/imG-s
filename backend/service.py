@@ -1,19 +1,57 @@
 import threading
 from datetime import datetime, timezone
 from functools import lru_cache
+from pathlib import Path
 
 import numpy as np
 
 from mri.parameters import PARAMS_BY_NAME
 from mri.phantom import head_phantom
 from mri.simulator import SpaceMRISimulator
+from mri.phantom import head_phantom, load_phantom_from_file
 from schemas import ImagePair, Metrics, SimulationResponse, Telemetry
 _SIMULATION_LOCK = threading.Lock()
+DATA_DIR = Path(__file__).parent / "data"
+PHANTOM_NAMES = ("phantom.png", "phantom.jpg", "phantom.jpeg", "phantom.npy")
 
+_phantom = {"array": None, "name": None}
 
 @lru_cache(maxsize=1)
+
+@lru_cache(maxsize=1)
+def _default_phantom():
+    """A picture from backend/data/ if there is one, otherwise the built-in head."""
+    for name in PHANTOM_NAMES:
+        candidate = DATA_DIR / name
+        if candidate.exists():
+            return load_phantom_from_file(candidate, 128), name
+    return head_phantom(128, 208.0), "built-in head"
+
+
 def get_phantom() -> np.ndarray:
-    return head_phantom(128, 208.0)
+    if _phantom["array"] is None:
+        _phantom["array"], _phantom["name"] = _default_phantom()
+    return _phantom["array"]
+
+
+def phantom_name() -> str:
+    get_phantom()
+    return _phantom["name"]
+
+
+def set_phantom_from_upload(data: bytes, filename: str) -> None:
+    """Use an uploaded picture as the phantom. Raises ValueError/OSError if it can't be read."""
+    suffix = Path(filename).suffix.lower()
+    with tempfile.TemporaryDirectory() as folder:
+        path = Path(folder) / f"upload{suffix}"
+        path.write_bytes(data)
+        array = load_phantom_from_file(path, 128)
+    _phantom["array"], _phantom["name"] = array, filename
+
+
+def reset_phantom() -> None:
+    """Go back to the default phantom."""
+    _phantom["array"] = None
 
 
 def run_simulation(params: dict, seed: int):

@@ -1,6 +1,9 @@
 # load_phantom_from_file() οτάν χρησιμοποιήσουμε τα DICOM
 
+from pathlib import Path
+
 import numpy as np
+from PIL import Image
 
 
 def _dist_to_segment(x, y, x1, y1, x2, y2):
@@ -35,9 +38,29 @@ def head_phantom(n=128, fov_mm=208.0):
 
 
 def load_phantom_from_file(path, n=128):
-    """TODO (team): load a phantom from a file and return an n x n float array in 0..1.
-    .png / .jpg -> OpenCV
-    .npy        -> numpy.load
-    .nii / .dcm -> nibabel / pydicom (pick one axial slice)
-    """
-    raise NotImplementedError("Phantom loading is not written yet.")
+    path = Path(path)
+    suffix = path.suffix.lower()
+
+    if suffix in (".png", ".jpg", ".jpeg"):
+        picture = Image.open(path).convert("F")          
+    elif suffix == ".npy":
+        data = np.load(path)
+        if data.ndim != 2:
+            raise ValueError(f"{path.name}: expected a 2D array, got shape {data.shape}.")
+        picture = Image.fromarray(data.astype(np.float32), mode="F")
+    elif suffix in (".nii", ".gz", ".dcm"):
+        raise NotImplementedError("NIfTI and DICOM files need nibabel / pydicom (not added yet).")
+    else:
+        raise ValueError(f"{path.name}: unsupported file type '{suffix}'. Use png, jpg or npy.")
+
+    width, height = picture.size
+    side = min(width, height)
+    left, top = (width - side) // 2, (height - side) // 2
+    picture = picture.crop((left, top, left + side, top + side))
+    picture = picture.resize((n, n), Image.Resampling.LANCZOS)
+
+    pixels = np.asarray(picture, dtype=np.float64)
+    low, high = pixels.min(), pixels.max()
+    if high - low < 1e-9:
+        raise ValueError(f"{path.name}: the picture is one flat colour.")
+    return (pixels - low) / (high - low)

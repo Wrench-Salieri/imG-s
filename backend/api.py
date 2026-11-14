@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, HTTPException, Request, UploadFile
 from fastapi.responses import JSONResponse
 
 import service
@@ -15,6 +15,7 @@ from schemas import (
     MissionResponse,
     ParameterSpec,
     ParametersResponse,
+    PhantomInfo,
     SimulationRequest,
     SimulationResponse,
     SweepRequest,
@@ -30,6 +31,7 @@ app = FastAPI(
 
 connector = MissionControlConnector()
 
+MAX_UPLOAD_BYTES = 10 * 1024 * 1024
 
 @app.exception_handler(NotImplementedError)
 async def physics_not_ready(request: Request, exc: NotImplementedError):
@@ -94,3 +96,28 @@ def mission_simulate(payload: MissionRequest, include_images: bool = True):
         effective_b0_tesla=round(effective_b0, 3),
         simulation=service.build_response(image, metrics, include_images),
     )
+
+@app.get("/phantom", response_model=PhantomInfo)
+def phantom_info():
+    """Which test image the simulations currently start from."""
+    return PhantomInfo(name=service.phantom_name())
+
+
+@app.post("/phantom", response_model=PhantomInfo)
+def upload_phantom(file: UploadFile):
+    """Use an uploaded picture (png, jpg or npy) as the test image."""
+    data = file.file.read(MAX_UPLOAD_BYTES + 1)
+    if len(data) > MAX_UPLOAD_BYTES:
+        raise HTTPException(status_code=413, detail="The file is larger than 10 MB.")
+    try:
+        service.set_phantom_from_upload(data, file.filename or "upload")
+    except (ValueError, OSError) as err:
+        raise HTTPException(status_code=422, detail=f"Could not use this picture: {err}")
+    return PhantomInfo(name=service.phantom_name())
+
+
+@app.delete("/phantom", response_model=PhantomInfo)
+def reset_phantom():
+    """Go back to the default test image."""
+    service.reset_phantom()
+    return PhantomInfo(name=service.phantom_name())
