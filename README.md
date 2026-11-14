@@ -32,6 +32,7 @@ The project relies entirely on scientific Python libraries for signal processing
 * **OpenCV (`cv2`) / Pillow:** For image handling, pre-processing, and format conversion.
 * **Requests:** For fetching real-time ISS telemetry and orbital tracking feeds.
 
+
 space-mri-simulator/
 │
 ├── mri_simulator.py       # Core SpaceMRISimulator class (Physics, DSP, SWaP metrics)
