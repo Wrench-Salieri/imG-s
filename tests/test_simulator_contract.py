@@ -1,20 +1,12 @@
-"""Run with:  python -m pytest tests   (from the project root; pip install pytest)
-
-Checks that the simulator keeps the agreed contract. Tests that need the physics
-are skipped until simulate() is written, then they start running by themselves.
-"""
+#Run with:  python -m pytest tests   (from the project root; pip install pytest)
 import math
-import sys
-from pathlib import Path
 
 import numpy as np
 import pytest
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "app"))
-
-from mri.parameters import DEFAULTS, PARAMS, REQUIRED_METRIC_KEYS  # noqa: E402
-from mri.phantom import head_phantom                                # noqa: E402
-from mri.simulator import SpaceMRISimulator                         # noqa: E402
+from mri.parameters import DEFAULTS, PARAMS, REQUIRED_METRIC_KEYS
+from mri.phantom import head_phantom
+from mri.simulator import SpaceMRISimulator                      # noqa: E402
 
 
 def _simulate(seed=0, **overrides):
