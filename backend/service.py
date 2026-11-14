@@ -1,4 +1,5 @@
 import threading
+import tempfile
 from datetime import datetime, timezone
 from functools import lru_cache
 from pathlib import Path
@@ -6,7 +7,6 @@ from pathlib import Path
 import numpy as np
 
 from mri.parameters import PARAMS_BY_NAME
-from mri.phantom import head_phantom
 from mri.simulator import SpaceMRISimulator
 from mri.phantom import head_phantom, load_phantom_from_file
 from schemas import ImagePair, Metrics, SimulationResponse, Telemetry
@@ -15,8 +15,6 @@ DATA_DIR = Path(__file__).parent / "data"
 PHANTOM_NAMES = ("phantom.png", "phantom.jpg", "phantom.jpeg", "phantom.npy")
 
 _phantom = {"array": None, "name": None}
-
-@lru_cache(maxsize=1)
 
 @lru_cache(maxsize=1)
 def _default_phantom():

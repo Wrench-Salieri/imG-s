@@ -6,3 +6,8 @@ plotly
 pillow
 scikit-image
 pytest
+fastapi 
+uvicorn[standard]
+requests 
+httpx
+python-multipart
