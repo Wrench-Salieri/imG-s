@@ -28,7 +28,7 @@ PARAMS = [
           "Number of repeated scans. More scans mean less noise."),
     Param("helium_pressure", "Helium pressure", "bar", 1.0, 5.0, 4.5, 0.1,
           "Pressure and stability of the helium cooling in the coils."),
-    Param("vibration_calibration", "Vibration sensitivity", "", 0.1, 3.0, 1.5, 0.1,
+    Param("vibration_calibration", "Vibration sensitivity", "", 0.1, 3.0, 0.1, 0.1,
           "Calibration factor linking vibration level to phase error."),
     Param("scanner_bore_cm", "Scanner bore diameter", "cm", 28.0, 50.0, 33.0, 1.0,
           "Inner diameter of the 3D scanner chamber."),

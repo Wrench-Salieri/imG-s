@@ -7,22 +7,25 @@ import streamlit as st
 from PIL import Image
 
 import api_client
-from components.theme import TEAL, AMBER, RED, MUTED, TEXT, style_figure
+from components.theme import (TEAL, AMBER, RED, MUTED, TEXT, style_figure, apply_compact_css,
+                              DESIGN_IMAGE_HEIGHT, MISSION_IMAGE_HEIGHT, SWEEP_CHART_HEIGHT)
 
 APP_DIR = Path(__file__).parent
 im = Image.open(APP_DIR / "components" / "images" / "favicon.png")
 
 st.set_page_config(page_title="imaG's", page_icon=im, layout="wide")
+apply_compact_css()
 
 START_COMMAND = "python -m uvicorn --app-dir backend api:app --reload"
 
-def image_figure(z, colorscale="gray", zmin=0.0, zmax=1.0):
+def image_figure(z, colorscale="gray", zmin=0.0, zmax=1.0, height=DESIGN_IMAGE_HEIGHT):
     fig = go.Figure(
         go.Heatmap(z=z, colorscale=colorscale, zmin=zmin, zmax=zmax,
                    showscale=False, hoverinfo="skip")
     )
-    style_figure(fig, height=340)
+    style_figure(fig, height=height)
     fig.update_layout(
+        margin=dict(l=0, r=0, t=0, b=0),
         xaxis=dict(visible=False),
         yaxis=dict(visible=False, autorange="reversed", scaleanchor="x"),
     )
@@ -54,7 +57,7 @@ def run_simulation(params, seed, scenario):
 def run_sweep(params, seed, name, points):
     return api_client.sweep(params, seed, name, points)
 
-def show_results(simulation, meta, prefix):
+def show_results(simulation, meta, prefix, image_height=DESIGN_IMAGE_HEIGHT):
     """Metrics, rack check and the three images for one simulation result."""
     metrics = simulation["metrics"]
     ideal = np.array(simulation["images"]["ideal"])
@@ -65,55 +68,57 @@ def show_results(simulation, meta, prefix):
     max_ssim = meta["ssim_max"]
     min_ssim = meta["ssim_min"]
 
-    a, b, c = st.columns(3)
-    a.metric("SSIM", f"{metrics['SSIM']:.3f}",
-             help="Clinical viability (Structual similarity to the ideal image, 1 is perfect).")
-    b.metric("PSNR", f"{metrics['PSNR_dB']:.1f} dB",
-             help="Peak signal-to-noise ratio against the ideal image.")
-    c.metric("ISS rack", "Compatible" if metrics["ISS_Rack_Compatible"] else "Does not fit")
-
-    volume, weight, power = metrics["Volume_m3"], metrics["Weight_kg"], metrics["Power_W"]
-    d, e, f = st.columns(3)
-    d.metric("Scanner volume", f"{volume:.3f} m³",
-             delta=f"{volume - max_volume:+.3f} m³ vs rack limit", delta_color="inverse")
-    e.metric("Estimated weight", f"{weight:.0f} kg",
-             delta=f"{weight - max_weight:+.0f} kg vs rack limit", delta_color="inverse")
-    f.metric("Power", f"{power:,.0f} W",
-             delta=f"{power - max_power:+,.0f} W vs rack limit", delta_color="inverse")
-
-    if metrics["ISS_Rack_Compatible"]:
-        st.success(f"This scanner fits an ISS rack (volume up to {max_volume} m³, "
-                   f"weight up to {max_weight:.0f} kg and power up to {max_power:,.0f} W).")
-    else:
-        too_much = []
-        if volume > max_volume:
-            too_much.append(f"volume {volume:.2f} m³ is over {max_volume} m³")
-        if weight > max_weight:
-            too_much.append(f"weight {weight:.0f} kg is over {max_weight:.0f} kg")
-        if power > max_power:
-            too_much.append(f"power {power:,.0f} W is over {max_power:,.0f} W")
-        st.error("This scanner does not fit an ISS rack: " + "; ".join(too_much) + ". "
-                 "Reduce the bore, the length, the field strength or the vibration.")
     ssim = metrics["SSIM"]
-    if metrics["SSIM_Compatible"]:
-        st.success(f"Scan quality is in the acceptable range "
-                   f"(SSIM {ssim:.2f}, target {min_ssim:.2f} to {max_ssim:.2f}).")
-    elif ssim < min_ssim:
-        st.error(f"Scan quality is too low (SSIM {ssim:.2f}, minimum {min_ssim:.2f}). "
-                 f"Reduce the vibration or increase the averaging.")
-    else:
-        st.warning(f"Scan quality is above the target range (SSIM {ssim:.2f}, "
-                   f"maximum {max_ssim:.2f}).")
+    volume, weight, power = metrics["Volume_m3"], metrics["Weight_kg"], metrics["Power_W"]
+
+    a, b, c, d, e, f = st.columns(6)
+    a.metric("SSIM", f"{ssim:.3f}", help="Clinical viability (Structural similarity to the ideal image, 1 is perfect).")
+    b.metric("PSNR", f"{metrics['PSNR_dB']:.1f} dB", help="Peak signal-to-noise ratio against the ideal image.")
+    c.metric("Scanner volume", f"{volume:.3f} m³",
+            delta=f"{volume - max_volume:+.3f} m³ vs limit", delta_color="inverse")
+    d.metric("Estimated weight", f"{weight:.0f} kg",
+            delta=f"{weight - max_weight:+.0f} kg vs limit", delta_color="inverse")
+    e.metric("Power", f"{power:,.0f} W",
+            delta=f"{power - max_power:+,.0f} W vs limit", delta_color="inverse")
+    f.metric("ISS rack", "Compatible" if metrics["ISS_Rack_Compatible"] else "Does not fit")
+
+    rack_box, quality_box = st.columns(2)
+    with rack_box:
+        if metrics["ISS_Rack_Compatible"]:
+            st.success(f"Fits an ISS rack (up to {max_volume} m³, {max_weight:.0f} kg "
+                       f"and {max_power:,.0f} W).")
+        else:
+            too_much = []
+            if volume > max_volume:
+                too_much.append(f"volume {volume:.2f} m³ is over {max_volume} m³")
+            if weight > max_weight:
+                too_much.append(f"weight {weight:.0f} kg is over {max_weight:.0f} kg")
+            if power > max_power:
+                too_much.append(f"power {power:,.0f} W is over {max_power:,.0f} W")
+            st.error("Does not fit an ISS rack: " + "; ".join(too_much) + ". "
+                     "Reduce the bore, the length, the field strength or the vibration.")
+    with quality_box:
+        if metrics["SSIM_Compatible"]:
+            st.success(f"Scan quality is in the acceptable range "
+                       f"(SSIM {ssim:.2f}, target {min_ssim:.2f} to {max_ssim:.2f}).")
+        elif ssim < min_ssim:
+            st.error(f"Scan quality is too low (SSIM {ssim:.2f}, minimum {min_ssim:.2f}). "
+                     f"Reduce the vibration or increase the averaging.")
+        else:
+            st.warning(f"Scan quality is above the target range (SSIM {ssim:.2f}, "
+                       f"maximum {max_ssim:.2f}).")
 
     left, middle, right = st.columns(3)
     left.markdown("**Original Earth MRI (Ground Truth)**", help="The high resolution baseline scan uploaded by the user.")
-    left.plotly_chart(image_figure(ideal), key=f"{prefix}_ideal")
+    left.plotly_chart(image_figure(ideal, height=image_height), key=f"{prefix}_ideal")
     middle.markdown("**ISS Simulated MRI**", help="The predicted image quality under the current scanner design and space environment.")
-    middle.plotly_chart(image_figure(simulated), key=f"{prefix}_simulated")
+    middle.plotly_chart(image_figure(simulated, height=image_height), key=f"{prefix}_simulated")
     right.markdown("**Artifacts Map**", help="Visualizes the structual damage caused by magnetic noise and micro-vibrations")
     diff = np.abs(ideal - simulated)
-    right.plotly_chart(image_figure(diff, "magma", 0.0, max(float(diff.max()), 0.05)),
-                       key=f"{prefix}_diff")
+    right.plotly_chart(
+        image_figure(diff, "magma", 0.0, max(float(diff.max()), 0.05), height=image_height),
+        key=f"{prefix}_diff",
+    )
 
 meta = call_api(load_parameters)
 if meta is None:
@@ -162,33 +167,40 @@ if st.sidebar.button("Use the default image"):
         
 seed = 42
 
-st.title("imaG's MRI Designer (name subject to change)")
-st.caption("A predictive design and telemetry tool for low field MRI and micro gravity.")
+st.markdown(
+    "<h4 style='margin:0;padding:0'>imaG's MRI Designer "
+    "<span style='font-size:0.8rem;font-weight:400;color:#9AA6BF'>"
+    "A predictive design and telemetry tool for low field MRI and micro gravity.</span></h4>",
+    unsafe_allow_html=True,
+)
 
 tab_design, tab_mission, tab_sweep = st.tabs(
     ["Engineering Design Mode", "Mission Control Mode", "Parameter sweep"]
 )
 
 with tab_design:
-    st.subheader("Engineering Design Mode")
-    st.caption("Move the sliders in the sidebar to design the scanner and see the result.")
-
     SOURCES = {
         "custom": "Custom (use the vibration sliders)",
         "quiet": "Quiet ambient (NASA SAMS recording)",
         "disturbed": "Orbital Maneuver (Thrusters), not quiet (NASA SAMS recording)",
     }
-    choice = st.selectbox("Vibration source", list(SOURCES), format_func=lambda key: SOURCES[key],
-                          key="design_source", help="Instead of artificial math the simulator injects raw time series acceleration data from the NASA Space Acceleration Measurement System (SAMS-II) directly into the case space face matrix")
+    choice = st.selectbox(
+        "Vibration source", list(SOURCES), format_func=lambda key: SOURCES[key], key="design_source",
+        help="Instead of artificial math the simulator injects raw time series acceleration data "
+             "from the NASA Space Acceleration Measurement System (SAMS-II) directly into the k-space matrix.",
+    )
     scenario = None if choice == "custom" else choice
+
+    caption = "Move the sliders in the sidebar to design the scanner and see the result."
     if scenario:
-        st.caption("The scan uses the recording. The vibration intensity and frequency sliders "
-                   "are ignored; vibration sensitivity still applies.")
+        caption += (" The scan uses the recording. The vibration intensity and frequency sliders "
+                    "are ignored; vibration sensitivity still applies.")
+    st.caption(caption)
 
     result = call_api(run_simulation, params, seed, scenario)
     
     if result is not None:
-        show_results(result, meta, "design")
+        show_results(result, meta, "design", DESIGN_IMAGE_HEIGHT)
     with st.expander("What do the parameters mean?"):
         st.dataframe(pd.DataFrame([
             {
@@ -201,17 +213,16 @@ with tab_design:
         ]))
 
 with tab_mission:
-    st.subheader("Mission Control Mode")
-    st.caption(
-        "Real time telemetry override: This mode evaluates your fixed hardware design "
-        "against live (or scripted SAMS-2) space weather and structual vibration data."
-    )
-
     design = {k: v for k, v in params.items() if k not in ("g_level_mg", "vibration_freq_hz")}
     this_run = {**design, "seed": seed}
 
-    live = st.toggle("Live updates (every 5 seconds)", key="mission_live")
-    clicked = st.button("Fetch live ISS data and simulate")
+    c1, c2, c3 = st.columns([1, 1, 2], vertical_alignment="center")
+    live = c1.toggle("Live updates (every 5 seconds)", key="mission_live")
+    clicked = c2.button("Fetch live ISS data and simulate")
+    c3.caption(
+        "Real time telemetry override: this mode evaluates your fixed hardware design "
+        "against live (or scripted SAMS-2) space weather and structural vibration data."
+    )
 
     @st.fragment(run_every=5 if live else None)
     def mission_panel(clicked):
@@ -242,6 +253,7 @@ with tab_mission:
         t4.metric("Effective B0", f"{mission['effective_b0_tesla']:.3f} T",
                   delta=f"{-tel['b0_penalty_tesla']:+.3f} T radiation penalty",
                   delta_color="inverse", help="External magnetic interference (e.g. crossing the South Atlantic Anomaly), reduces the effective signal to noise ratio.")
+        show_results(mission["simulation"], meta, "mission", MISSION_IMAGE_HEIGHT)
 
         if tel["position_live"]:
             position = f"{tel['latitude']:.1f}°, {tel['longitude']:.1f}°"
@@ -250,19 +262,16 @@ with tab_mission:
         st.caption(f"ISS position: {position}  |  recorded {tel['timestamp_utc']} UTC  |  "
                    "vibration profile: scripted demo scenario, not SAMS-II data")
 
-        show_results(mission["simulation"], meta, "mission")
-
     mission_panel(clicked)
 
 with tab_sweep:
-    st.subheader("Parameter sweep")
-    st.caption("Change one setting across its whole range, keep the others from the sidebar, "
-               "and see how quality, size, weight and power respond.")
-
-    sweep_name = st.selectbox(
+    s1, s2 = st.columns(2)
+    sweep_name = s1.selectbox(
         "Setting to sweep", list(specs), format_func=lambda n: specs[n]["label"],
+        help="Change one setting across its whole range, keep the others from the sidebar, "
+             "and see how quality, size, weight and power respond.",
     )
-    points = st.slider("Number of points", 5, 25, 11)
+    points = s2.slider("Number of points", 5, 25, 11)
     spec = specs[sweep_name]
     axis_title = f"{spec['label']} ({spec['unit']})" if spec["unit"] else spec["label"]
 
@@ -282,7 +291,7 @@ with tab_sweep:
                                       mode="lines+markers", yaxis="y2",
                                       line=dict(color=MUTED, dash="dash")))
             qfig.add_vline(x=current, line_dash="dot", line_color="white")
-            style_figure(qfig, height=380)
+            style_figure(qfig, height=SWEEP_CHART_HEIGHT)
             qfig.update_layout(
                 xaxis=dict(title=axis_title),
                 yaxis=dict(title="SSIM"),
@@ -301,7 +310,7 @@ with tab_sweep:
                                       mode="lines+markers", yaxis="y2",
                                       line=dict(color=MUTED, dash="dash")))
             wfig.add_vline(x=current, line_dash="dot", line_color="white")
-            style_figure(wfig, height=380)
+            style_figure(wfig, height=SWEEP_CHART_HEIGHT)
             wfig.update_layout(
                 xaxis=dict(title=axis_title),
                 yaxis=dict(title="Weight (kg)"),
