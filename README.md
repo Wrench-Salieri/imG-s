@@ -51,18 +51,31 @@ The core of the engine is a Digital Signal Processing (DSP) pipeline that applie
    $$\sigma \propto \frac{1}={B_0 \sqrt{N_{avg}}}$$
 
 4. Systems Engineering Evaluation: An Inverse FFT reconstructs the final image. The platform the outputs:
-   a. **Clinical Viability: Evaluated via SSIM (Structural Similarity Index) and PSNR.
-   b. **SWaP Compliance: Hardware volume and power formulas evaluate if the design respects the 2,000W ISS Rack limits and astronaut ergonomic fit(min. bore size).
-
+   * **Clinical Viability: Evaluated via SSIM (Structural Similarity Index) and PSNR.
+   * **SWaP Compliance: Hardware volume and power formulas evaluate if the design respects the 2,000W ISS Rack limits and astronaut ergonomic fit(min. bore size).
+   
 ##Tech Stack:
-
 The project relies entirely on scientific Python libraries for signal processing, mathematical modeling, and evaluation:
+   * **Core Physics: Python 3.10+, NumPy, SciPy (FFT&DSP)
+   * **Image Processing: scikit-image(SSIM/PSNR metrics)
+   * **UI & Backend: Streamlit, FastAPI
+   * **Data Integration: Pandas, NASA SAMS-II Open Data, Open-Notify ISS API
+     
+##Scientific References:
+ The physics engine is built upon established biomedical engineering principles
 
-* **Python 3.10+**
-* **NumPy & SciPy:** For matrix operations, Fast Fourier Transforms (`numpy.fft.fft2`, `ifft2`, `fftshift`), and Gaussian filtering (`scipy.ndimage.gaussian_filter`).
-* **scikit-image (`skimage.metrics`):** For calculating clinical image quality metrics (`structural_similarity` - SSIM, `peak_signal_noise_ratio` - PSNR).
-* **OpenCV (`cv2`) / Pillow:** For image handling, pre-processing, and format conversion.
-* **Requests:** For fetching real-time ISS telemetry and orbital tracking feeds.
+[1] 
+M. Zaitsev, J. Maclaren, and M. Herbst, “Motion artifacts in MRI: A complex problem with many partial solutions,” Magnetic Resonance Imaging, vol. 42, no. 4, pp. 887–901, Oct. 2015.
+[2] 
+A. Van Ombergen, S. Laureys, S. Sunaert, E. Tomilovskaya, P. M. Parizel, and F. L. Wuyts, “Spaceflight-induced neuroplasticity in humans as measured by MRI: what do we know so far?,” npj Microgravity, vol. 3, no. 1, p. 2, Jan. 2017.
+[3] 
+G. Sarty and A. Obenaus, “Magnetic resonance imaging of astronauts on the International Space Station and into the solar system,” Canadian Aeronautics and Space Journal, vol. 58, pp. 60–68, Apr. 2012. 
+[4] 
+W. T. Kimberly et al., “Brain imaging with portable low-field MRI,” Nat Rev Bioeng, vol. 1, no. 9, pp. 617–630, Jul. 2023. 
+[5] 
+H. Gudbjartsson and S. Patz, “The rician distribution of noisy mri data,” Magnetic Resonance in Med, vol. 34, no. 6, pp. 910–914.
+[6] 
+L. Cui et al., “Motion artifact reduction for magnetic resonance imaging with deep learning and k-space analysis,” PLoS ONE, vol. 18, no. 1, p. e0278668, Jan. 2023.
 
 ## Running Locally 
 Installing
