@@ -50,7 +50,7 @@ The core of the engine is a Digital Signal Processing (DSP) pipeline that applie
      
 ---
 
-##Tech Stack:
+## Tech Stack:
 The project relies entirely on scientific Python libraries for signal processing, mathematical modeling, and evaluation:
    * **Core Physics**: Python 3.10+, NumPy, SciPy (FFT&DSP)
    * **Image Processing**: scikit-image(SSIM/PSNR metrics)
@@ -59,7 +59,7 @@ The project relies entirely on scientific Python libraries for signal processing
      
 --- 
 
-##Scientific References:
+## Scientific References:
  The physics engine is built upon established biomedical engineering principles
 
 [1] 
