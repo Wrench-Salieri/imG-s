@@ -12,6 +12,7 @@ from mri.parameters import (
     SSIM_MIN_ACCEPTABLE,
 )
 from mri.telemetry import MissionControlConnector
+from mri import sams
 from schemas import (
     MissionRequest,
     MissionResponse,
@@ -39,6 +40,9 @@ MAX_UPLOAD_BYTES = 10 * 1024 * 1024
 async def physics_not_ready(request: Request, exc: NotImplementedError):
     return JSONResponse(status_code=501, content={"detail": str(exc) or "Not implemented yet."})
 
+@app.exception_handler(sams.SamsDataMissing)
+async def sams_missing(request: Request, exc: sams.SamsDataMissing):
+    return JSONResponse(status_code=503, content={"detail": str(exc)})
 
 @app.get("/health")
 def health():
@@ -86,18 +90,39 @@ def telemetry():
 
 @app.post("/mission/simulate", response_model=MissionResponse)
 def mission_simulate(payload: MissionRequest, include_images: bool = True):
-    live = service.read_telemetry(connector)
+    live = service.read_telemetry(connector)          # ISS position and radiation only
+    try:
+        override = cloud_state.read_override()
+        cloud_error = None
+    except cloud_state.CloudStateError as err:
+        override = {"active": False, "storage": cloud_state.get_store().name}
+        cloud_error = str(err)
+
+    params = payload.physics_inputs()
+    if override["active"]:
+        g_level, frequency = override["g_level_mg"], override["vibration_freq_hz"]
+        activity, source = "Astronaut override", "astronaut override"
+        params["vibration_scenario"] = None            # the sine wave, with the astronaut's numbers
+    else:
+        recording = sams.describe(payload.vibration_scenario)
+        g_level, frequency = recording["rms_mg"], recording["dominant_hz"]
+        activity = recording["label"]
+        source = f"NASA SAMS recording, {recording['source_utc']} UTC"
+
+    live = live.model_copy(update={"iss_activity": activity, "live_g_level_mg": g_level,
+                                   "live_vibration_hz": frequency})
     effective_b0 = max(0.01, payload.b0_tesla - live.b0_penalty_tesla)
-    params = {
-        **payload.physics_inputs(),
-        "b0_tesla": effective_b0,
-        "g_level_mg": live.live_g_level_mg,
-        "vibration_freq_hz": live.live_vibration_hz,
-    }
+    params.update(b0_tesla=effective_b0, g_level_mg=g_level, vibration_freq_hz=frequency)
+
     image, metrics = service.run_simulation(params, payload.noise_seed)
     return MissionResponse(
         telemetry=live,
         effective_b0_tesla=round(effective_b0, 3),
+        effective_g_level_mg=g_level,
+        effective_vibration_hz=frequency,
+        vibration_source=source,
+        override=override,
+        cloud_error=cloud_error,
         simulation=service.build_response(image, metrics, include_images),
     )
 

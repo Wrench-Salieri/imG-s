@@ -11,3 +11,4 @@ uvicorn[standard]
 requests 
 httpx
 python-multipart
+firebase-admin

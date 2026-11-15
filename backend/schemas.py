@@ -1,5 +1,5 @@
 from pydantic import BaseModel, ConfigDict, Field, computed_field, field_validator
-
+from typing import Literal
 from mri.parameters import PARAMS_BY_NAME, SSIM_MAX_ACCEPTABLE, SSIM_MIN_ACCEPTABLE
 
 
@@ -33,7 +33,7 @@ class SimulationRequest(DesignInputs):
 
 
 class MissionRequest(DesignInputs):
-    pass
+    vibration_scenario: Literal["quiet", "disturbed"] = "quiet"
 
 class SweepRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")

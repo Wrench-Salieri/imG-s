@@ -199,8 +199,15 @@ with tab_mission:
         "telemetry, not from the sliders."
     )
 
+    SCENARIOS = {
+        "quiet": "Quiet ambient (microgravity)",
+        "disturbed": "Orbital Maneuver (Thrusters), not quiet",
+    }
+    scenario = st.selectbox("Vibration scenario (real NASA SAMS recording)", list(SCENARIOS),
+                            format_func=lambda key: SCENARIOS[key], key="mission_scenario")
+
     design = {k: v for k, v in params.items() if k not in ("g_level_mg", "vibration_freq_hz")}
-    this_run = {**design, "seed": seed}
+    this_run = {**design, "seed": seed, "scenario": scenario}
 
     live = st.toggle("Live updates (every 5 seconds)", key="mission_live")
     clicked = st.button("Fetch live ISS data and simulate")
