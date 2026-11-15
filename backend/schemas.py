@@ -30,10 +30,15 @@ class DesignInputs(BaseModel):
 class SimulationRequest(DesignInputs):
     g_level_mg: float = _limits("g_level_mg")
     vibration_freq_hz: float = _limits("vibration_freq_hz")
+    vibration_scenario: Literal["quiet", "disturbed"] | None = Field(
+        default=None,
+        description="A real NASA SAMS recording to use as the vibration. "
+                    "Empty means a made-up sine wave from the two settings above.",
+    )
 
 
 class MissionRequest(DesignInputs):
-    vibration_scenario: Literal["quiet", "disturbed"] = "quiet"
+    pass
 
 class SweepRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")

@@ -48,7 +48,7 @@ DEFAULTS = {p.name: p.default for p in PARAMS}
 
 # simulate() return
 REQUIRED_METRIC_KEYS = (
-    "SSIM", "PSNR_dB", "Volume_m3", "Weight_kg", "Power_W", "ISS_Rack_Compatible", "SSIM_Compatible",
+    "SSIM", "PSNR_dB", "Volume_m3", "Weight_kg", "Power_W", "ISS_Rack_Compatible",
 )
 
 # ISS rack limits

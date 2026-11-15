@@ -41,28 +41,14 @@ def call_api(func, *args):
     return None
 
 
-def clamp_to_range(name, value):
-    p = PARAMS_BY_NAME[name]
-    return float(min(max(value, p.minimum), p.maximum))
-
-
-def try_call(func, *args):
-    try:
-        return func(*args)
-    except NotImplementedError as err:
-        st.info(f"Waiting for the Physics & DSP team. {err}")
-        return None
-
-
 @st.cache_data(ttl=300, show_spinner=False)
 def load_parameters():
     return api_client.get_parameters()
 
 
 @st.cache_data(show_spinner=False)
-def run_simulation(params, seed):
-    return api_client.simulate(params, seed)
-
+def run_simulation(params, seed, scenario):
+    return api_client.simulate(params, seed, scenario)
 
 @st.cache_data(show_spinner=False)
 def run_sweep(params, seed, name, points):
@@ -177,7 +163,21 @@ tab_design, tab_mission, tab_sweep = st.tabs(
 with tab_design:
     st.subheader("Engineering Design Mode")
     st.caption("Move the sliders in the sidebar to design the scanner and see the result.")
-    result = call_api(run_simulation, params, seed)
+
+    SOURCES = {
+        "custom": "Custom (use the vibration sliders)",
+        "quiet": "Quiet ambient (NASA SAMS recording)",
+        "disturbed": "Orbital Maneuver (Thrusters), not quiet (NASA SAMS recording)",
+    }
+    choice = st.selectbox("Vibration source", list(SOURCES), format_func=lambda key: SOURCES[key],
+                          key="design_source")
+    scenario = None if choice == "custom" else choice
+    if scenario:
+        st.caption("The scan uses the recording. The vibration intensity and frequency sliders "
+                   "are ignored; vibration sensitivity still applies.")
+
+    result = call_api(run_simulation, params, seed, scenario)
+    
     if result is not None:
         show_results(result, meta, "design")
     with st.expander("What do the parameters mean?"):
@@ -199,15 +199,8 @@ with tab_mission:
         "telemetry, not from the sliders."
     )
 
-    SCENARIOS = {
-        "quiet": "Quiet ambient (microgravity)",
-        "disturbed": "Orbital Maneuver (Thrusters), not quiet",
-    }
-    scenario = st.selectbox("Vibration scenario (real NASA SAMS recording)", list(SCENARIOS),
-                            format_func=lambda key: SCENARIOS[key], key="mission_scenario")
-
     design = {k: v for k, v in params.items() if k not in ("g_level_mg", "vibration_freq_hz")}
-    this_run = {**design, "seed": seed, "scenario": scenario}
+    this_run = {**design, "seed": seed}
 
     live = st.toggle("Live updates (every 5 seconds)", key="mission_live")
     clicked = st.button("Fetch live ISS data and simulate")

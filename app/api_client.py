@@ -43,18 +43,17 @@ def get_parameters() -> dict:
     return _call("GET", "/parameters")
 
 
-def simulate(params: dict, seed: int) -> dict:
-    return _call("POST", "/simulate", json={**params, "noise_seed": seed})
-
+def simulate(params: dict, seed: int, scenario: str | None = None) -> dict:
+    return _call("POST", "/simulate",
+                 json={**params, "noise_seed": seed, "vibration_scenario": scenario})
 
 def sweep(params: dict, seed: int, parameter: str, points: int) -> dict:
     body = {"base": {**params, "noise_seed": seed}, "parameter": parameter, "points": points}
     return _call("POST", "/sweep", json=body)
 
 
-def mission(design: dict, seed: int, scenario: str) -> dict:
-    return _call("POST", "/mission/simulate",
-                 json={**design, "vibration_scenario": scenario, "noise_seed": seed})
+def mission(design: dict, seed: int) -> dict:
+    return _call("POST", "/mission/simulate", json={**design, "noise_seed": seed})
 
 def get_phantom_info() -> dict:
     return _call("GET", "/phantom")
