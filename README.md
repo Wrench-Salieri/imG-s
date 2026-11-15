@@ -48,7 +48,20 @@ The project relies entirely on scientific Python libraries for signal processing
 * **OpenCV (`cv2`) / Pillow:** For image handling, pre-processing, and format conversion.
 * **Requests:** For fetching real-time ISS telemetry and orbital tracking feeds.
 
+## Running Locally 
+```bash
+git clone https://github.com/Wrench-Salieri/imG-s.git
+cd imG-s
+python -m venv .venv
+source .venv/bin/activate          # Windows: .venv\Scripts\activate
+pip install -r requirements.txt
 
+# terminal 1: the physics API
+python -m uvicorn --app-dir backend api:app
+
+# terminal 2: the dashboard
+python -m streamlit run app/main.py
+```
 📦 space-mri-simulator
  ┣ 🧠 mri_simulator.py       # Core Physics & DSP Engine (K-space, Rician noise, SWaP metrics)
  ┣ 🛰️ mission_control.py     # Live ISS Telemetry Connector (SAMS-II vibrations & SAA tracking)
