@@ -202,16 +202,22 @@ with tab_mission:
     design = {k: v for k, v in params.items() if k not in ("g_level_mg", "vibration_freq_hz")}
     this_run = {**design, "seed": seed}
 
-    if st.button("Fetch live ISS data and simulate"):
-        mission = call_api(api_client.mission, design, seed)
-        if mission is not None:
-            st.session_state["mission"] = mission
-            st.session_state["mission_run"] = this_run
+    live = st.toggle("Live updates (every 5 seconds)", key="mission_live")
+    clicked = st.button("Fetch live ISS data and simulate")
 
-    mission = st.session_state.get("mission")
-    if mission is None:
-        st.caption("Press the button to load live data.")
-    else:
+    @st.fragment(run_every=5 if live else None)
+    def mission_panel(clicked):
+        if live or clicked:
+            mission = call_api(api_client.mission, design, seed)
+            if mission is not None:
+                st.session_state["mission"] = mission
+                st.session_state["mission_run"] = this_run
+
+        mission = st.session_state.get("mission")
+        if mission is None:
+            st.caption("Press the button to load live data.")
+            return
+
         if st.session_state.get("mission_run") != this_run:
             st.warning("The sidebar settings changed since this run. Press the button again to update.")
 
@@ -237,6 +243,8 @@ with tab_mission:
                    "vibration profile: scripted demo scenario, not SAMS-II data")
 
         show_results(mission["simulation"], meta, "mission")
+
+    mission_panel(clicked)
 
 with tab_sweep:
     st.subheader("Parameter sweep")

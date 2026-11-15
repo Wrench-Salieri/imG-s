@@ -2,7 +2,7 @@ import time
 
 import requests
 
-ISS_POSITION_URL = "http://api.open-notify.org/iss-now.json"
+ISS_POSITION_URL = "https://api.wheretheiss.at/v1/satellites/25544"
 
 
 class MissionControlConnector:
@@ -12,8 +12,8 @@ class MissionControlConnector:
     def fetch_live_telemetry(self) -> dict:
         try:
             response = requests.get(self.iss_api_url, timeout=5).json()
-            lat = float(response["iss_position"]["latitude"])
-            lon = float(response["iss_position"]["longitude"])
+            lat = float(response["latitude"])
+            lon = float(response["longitude"])
             position_live = True
         except Exception:
             lat, lon, position_live = None, None, False
