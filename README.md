@@ -64,14 +64,19 @@ The project relies entirely on scientific Python libraries for signal processing
 
 [1] 
 M. Zaitsev, J. Maclaren, and M. Herbst, “Motion artifacts in MRI: A complex problem with many partial solutions,” Magnetic Resonance Imaging, vol. 42, no. 4, pp. 887–901, Oct. 2015.
+
 [2] 
 A. Van Ombergen, S. Laureys, S. Sunaert, E. Tomilovskaya, P. M. Parizel, and F. L. Wuyts, “Spaceflight-induced neuroplasticity in humans as measured by MRI: what do we know so far?,” npj Microgravity, vol. 3, no. 1, p. 2, Jan. 2017.
+
 [3] 
 G. Sarty and A. Obenaus, “Magnetic resonance imaging of astronauts on the International Space Station and into the solar system,” Canadian Aeronautics and Space Journal, vol. 58, pp. 60–68, Apr. 2012. 
+
 [4] 
 W. T. Kimberly et al., “Brain imaging with portable low-field MRI,” Nat Rev Bioeng, vol. 1, no. 9, pp. 617–630, Jul. 2023. 
+
 [5] 
 H. Gudbjartsson and S. Patz, “The rician distribution of noisy mri data,” Magnetic Resonance in Med, vol. 34, no. 6, pp. 910–914.
+
 [6] 
 L. Cui et al., “Motion artifact reduction for magnetic resonance imaging with deep learning and k-space analysis,” PLoS ONE, vol. 18, no. 1, p. e0278668, Jan. 2023.
 
