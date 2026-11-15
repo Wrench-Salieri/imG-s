@@ -47,11 +47,14 @@ The core of the engine is a Digital Signal Processing (DSP) pipeline that applie
 
 3. **Low-Field Rician Noise Simulation: Operating at low B0 fields drastically reduces the Signal-to-Noise Ration(SNR). Because MRI coils acquire complex data, the background noise follows a Rician distribution. We inject independent Gaussian noise into the real(N_R) and imaginary(N_I) channels. The noise standard deviation is inversely proportional to the magnetic field B0 and the square root of scan averages (N_avg):
    $$M_{simulated}=\sqrt{Re\{I\}+N_R(0, \sigma^2))^2 + (Im\{I\} + N_I(0, \sigma^2))^2}$$
-   $$\sigma \propto \frac{1}={B_0 \sqrt{N_{avg}}}$$
-   
-   
 
-      
+   $$\sigma \propto \frac{1}={B_0 \sqrt{N_{avg}}}$$
+
+4. Systems Engineering Evaluation: An Inverse FFT reconstructs the final image. The platform the outputs:
+   a. **Clinical Viability: Evaluated via SSIM (Structural Similarity Index) and PSNR.
+   b. **SWaP Compliance: Hardware volume and power formulas evaluate if the design respects the 2,000W ISS Rack limits and astronaut ergonomic fit(min. bore size).
+
+##Tech Stack:
 
 The project relies entirely on scientific Python libraries for signal processing, mathematical modeling, and evaluation:
 
