@@ -6,8 +6,8 @@ plotly
 pillow
 scikit-image
 pytest
-fastapi 
+fastapi
 uvicorn[standard]
-requests 
+requests
 httpx
 python-multipart

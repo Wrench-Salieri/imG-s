@@ -8,6 +8,7 @@ from mri.sams import load_trace
 from mri.parameters import (DEFAULTS, ISS_RACK_MAX_POWER_W, ISS_RACK_MAX_VOLUME_M3,
                             ISS_RACK_MAX_WEIGHT_KG)
 
+
 class SpaceMRISimulator:
     def __init__(self, ideal_phantom: np.ndarray):
         self.ideal_image = ideal_phantom.astype(np.float64)

@@ -10,10 +10,9 @@ from mri.simulator import SpaceMRISimulator                      # noqa: E402
 
 
 def _simulate(seed=0, **overrides):
-    np.random.seed(seed)
     simulator = SpaceMRISimulator(head_phantom(64, 208.0))
     try:
-        return simulator.simulate(**{**DEFAULTS, **overrides})
+        return simulator.simulate(**{**DEFAULTS, **overrides}, seed=seed)
     except NotImplementedError:
         pytest.skip("simulate() is not written yet")
 
@@ -39,12 +38,22 @@ def test_volume_formula():
 
 
 def test_more_averaging_gives_higher_psnr():
-    _, few = _simulate(scan_averaging=1)
-    _, many = _simulate(scan_averaging=8)
-    assert many["PSNR_dB"] >= few["PSNR_dB"]
+    # No vibration and no thermal blur, so noise is the only thing that spoils the image.
+    quiet = dict(g_level_mg=0.0, helium_pressure=5.0)
+    _, few = _simulate(scan_averaging=1, **quiet)
+    _, many = _simulate(scan_averaging=8, **quiet)
+    assert many["PSNR_dB"] > few["PSNR_dB"]
 
 
 def test_vibration_does_not_help_the_image():
     _, still = _simulate(g_level_mg=0.0)
     _, shaky = _simulate(g_level_mg=100.0)
     assert still["SSIM"] >= shaky["SSIM"]
+
+
+def test_same_seed_gives_the_same_image_and_a_different_seed_does_not():
+    first, _ = _simulate(seed=1)
+    again, _ = _simulate(seed=1)
+    other, _ = _simulate(seed=2)
+    assert np.array_equal(first, again)
+    assert not np.array_equal(first, other)

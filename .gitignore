@@ -3,3 +3,5 @@ __pycache__/
 archive_physics_reference/
 phantoms
 data_raw/
+.pytest_cache/
+.env
