@@ -49,6 +49,7 @@ The project relies entirely on scientific Python libraries for signal processing
 * **Requests:** For fetching real-time ISS telemetry and orbital tracking feeds.
 
 ## Running Locally 
+Installing
 ```bash
 git clone https://github.com/Wrench-Salieri/imG-s.git
 cd imG-s
@@ -56,6 +57,7 @@ python -m venv .venv
 source .venv/bin/activate          # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 ```
+
 Terminal 1: start the API
 
 ```bash

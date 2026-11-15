@@ -5,6 +5,11 @@ import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
 from PIL import Image
+import subprocess
+import sys
+import time
+
+import requests
 
 import api_client
 from components.theme import (TEAL, AMBER, RED, MUTED, style_figure, apply_compact_css,
@@ -15,6 +20,32 @@ im = Image.open(APP_DIR / "components" / "images" / "favicon.png")
 
 st.set_page_config(page_title="imaG's", page_icon=im, layout="wide")
 apply_compact_css()
+
+@st.cache_resource
+def ensure_backend():
+    """Start the API next to the dashboard if nobody has started it (needed on hosted runs)."""
+    health = f"{api_client.API_URL}/health"
+    try:
+        requests.get(health, timeout=1)
+        return                                   # already running, e.g. your two-terminal setup
+    except requests.exceptions.RequestException:
+        pass
+
+    subprocess.Popen(
+        [sys.executable, "-m", "uvicorn", "--app-dir", "backend", "api:app",
+         "--host", "127.0.0.1", "--port", "8000"],
+        cwd=APP_DIR.parent,                      # the project root
+    )
+    for _ in range(30):                          # wait up to about 15 seconds for it to come up
+        time.sleep(0.5)
+        try:
+            requests.get(health, timeout=1)
+            return
+        except requests.exceptions.RequestException:
+            continue
+
+
+ensure_backend()
 
 START_COMMAND = "python -m uvicorn --app-dir backend api:app --reload"
 
