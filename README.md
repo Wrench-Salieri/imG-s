@@ -39,8 +39,8 @@ Our digital twin offers two primary operating modes:
 ## How Does it Work? (Physics & DSP Engine)
 The core of the engine is a Digital Signal Processing (DSP) pipeline that applies physics-based degradation models to a ground-truth brain phantom.
 
-1.**K-Space Transformation MRI scanners collect data in the frequency domain. The ideal image(x,y) is transformed into K-space using a 2D Fast Fourier Transform:
-      S(k_x,k_y )=∫_ ^ ▒∫_ ^ ▒〖I(x,  y) e^(-i2π(k_z x+k_y y) ) dxdy〗
+1. **K-Space Transformation MRI scanners collect data in the frequency domain. The ideal image(x,y) is transformed into K-space using a 2D Fast Fourier Transform:
+   $$K(u,v) = \sum_{x=0}^{M-1} \sum_{y=0}^{N-1} I(x,y) e^{-j 2\pi \left(\frac{ux}{M} + \frac{vy}{N}\right)}$$
 
 The project relies entirely on scientific Python libraries for signal processing, mathematical modeling, and evaluation:
 
