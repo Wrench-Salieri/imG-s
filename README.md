@@ -4,6 +4,8 @@
 
 ---
 
+## Check live demo on https://img-s-mri-designer.streamlit.app/ or run locally
+
 ## Overview
 Magnetic Resonace Imaging (MRI) is crucial for monitoring astronaut health on long-duration missions (e.g., investigating Spaceflight-Associated Neuro-ocular Syndrome - SANS). However, conventional MRI scanners cannot simply be launched into space.
 
