@@ -55,11 +55,14 @@ cd imG-s
 python -m venv .venv
 source .venv/bin/activate          # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
-
-# terminal 1: the physics API
+```
+```bash
 python -m uvicorn --app-dir backend api:app
+```
 
-# terminal 2: the dashboard
+Terminal 2: start the dashboard
+
+```bash
 python -m streamlit run app/main.py
 ```
 📦 space-mri-simulator
