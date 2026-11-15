@@ -45,8 +45,8 @@ The core of the engine is a Digital Signal Processing (DSP) pipeline that applie
    $$\sigma \propto \frac{1}={B_0 \sqrt{N_{avg}}}$$
 
 4. **Systems Engineering Evaluation**: An Inverse FFT reconstructs the final image. The platform the outputs:
-   * **Clinical Viability: Evaluated via SSIM (Structural Similarity Index) and PSNR.
-   * **SWaP Compliance: Hardware volume and power formulas evaluate if the design respects the 2,000W ISS Rack limits and astronaut ergonomic fit(min. bore size).
+   * **Clinical Viability**: Evaluated via SSIM (Structural Similarity Index) and PSNR.
+   * **SWaP Compliance**: Hardware volume and power formulas evaluate if the design respects the 2,000W ISS Rack limits and astronaut ergonomic fit(min. bore size).
      
 ---
 
