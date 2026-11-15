@@ -1,5 +1,5 @@
-# Space MRI Digital Design & Simulation Engine (ISS Simulator)
-# NASA Space Apps Challenge 2026 | Team:imaG-s
+# Space MRI Virtual Prototype Engine (ISS Simulator)
+# NASA Space Apps Challenge 2026 | Team:imaG's
 > *A physics-driven DSP and Digital Twin simulation engine developed for space-based MRI hardware design and live International Space Station (ISS) telemetry monitoring.*
 
 ---
@@ -9,7 +9,7 @@
 ## Overview
 Magnetic Resonace Imaging (MRI) is crucial for monitoring astronaut health on long-duration missions (e.g., investigating Spaceflight-Associated Neuro-ocular Syndrome - SANS). However, conventional MRI scanners cannot simply be launched into space.
 
-Space MRI Digital Design & Simulation Engine is an interacrive simulation platform that explores how MRI technology must adapt to survive spacecraft constraints. It models the intersection of medical imaging physics and aerospace engineering, allowing users to design a scanner and instantly see how space enviroments degrade the medical image.
+Space MRI Virtual Prototype Engine is an interacrive simulation platform that explores how MRI technology must adapt to survive spacecraft constraints. It models the intersection of medical imaging physics and aerospace engineering, allowing users to design a scanner and instantly see how space enviroments degrade the medical image.
 
 ---
 
