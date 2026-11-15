@@ -1,18 +1,18 @@
-# imG-s
-# 🛰️ Space MRI Digital Twin Engine (ISS Simulator)
+# Space MRI Digital Design & Simulation Engine (ISS Simulator)
+# NASA Space Apps Challenge 2026 | Team:imaG-s
 > *A physics-driven DSP and Digital Twin simulation engine developed for space-based MRI hardware design and live International Space Station (ISS) telemetry monitoring.*
 
 ---
 
-## 📌 Overview
-Operating a Magnetic Resonance Imaging (MRI) scanner aboard the **International Space Station (ISS)** introduces extreme physical challenges: low magnetic fields ($B_0$), microgravity vibrations ($g$-jitter), thermal instability, and power/size constraints (SWaP). 
+## Overview
+Magnetic Resonace Imaging (MRI) is crucial for monitoring astronaut health on long-duration missions (e.g., investigating Spaceflight-Associated Neuro-ocular Syndrome - SANS). However, conventional MRI scanners cannot simply be launched into space.
 
-This project implements a complete **Physics & Digital Signal Processing (DSP) Engine** in Python. It bridges theoretical MRI physics (K-space manipulations, Rician noise distributions) with real-time aerospace telemetry (NASA SAMS-II acceleration data and orbital coordinates).
+Space MRI Digital Design & Simulation Engine is an interacrive simulation platform that explores how MRI technology must adapt to survive spacecraft constraints. It models the intersection of medical imaging physics and aerospace engineering, allowing users to design a scanner and instantly see how space enviroments degrade the medical image.
 
 ---
 
-## 🚀 Key Features
-1. **Engineering Design Mode (Manual):** Allows engineers and hardware designers to tweak custom parameters (magnetic field strength $B_0$, helium pressure, scan averaging, and physical scanner dimensions).
+## Key Features
+1. **Engineering Design Mode (Manual):** Allows engineers and hardware designers to tweak custom parameters (magnetic field strength B0, helium pressure, scan averaging, and physical scanner dimensions).
 2. **Mission Control Mode (Live NASA Data):** Connects with live ISS orbital tracking and telemetry APIs to dynamically inject real-time environmental interference—such as crew workouts (ARED/TRED), orbital thruster firings, and South Atlantic Anomaly (SAA) radiation spikes—directly into the MRI reconstruction pipeline.
 3. **Rigorous Physical Modeling:** 
    - **K-Space Phase Shifts ($g$-Jitter):** Simulates structural ghosting artifacts caused by station vibrations.
