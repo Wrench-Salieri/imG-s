@@ -39,8 +39,19 @@ Our digital twin offers two primary operating modes:
 ## How Does it Work? (Physics & DSP Engine)
 The core of the engine is a Digital Signal Processing (DSP) pipeline that applies physics-based degradation models to a ground-truth brain phantom.
 
-1. **K-Space Transformation MRI scanners collect data in the frequency domain. The ideal image(x,y) is transformed into K-space using a 2D Fast Fourier Transform:
-   $$K(u,v) = \sum_{x=0}^{M-1} \sum_{y=0}^{N-1} I(x,y) e^{-j 2\pi \left(\frac{ux}{M} + \frac{vy}{N}\right)}$$
+1. **K-Space Transformation: MRI scanners collect data in the frequency domain. The ideal image(x,y) is transformed into K-space using a 2D Fast Fourier Transform:
+   $$S(k_x,k_y) = \iint I(x,y) e^{-i2\pi(\k_xx+k_yy} dx\,dy$$
+
+2. **Microgravity Vibrations (Motion S\Artifacts): Mechanical motion during an MRI scan translates into phase shifts. Whether using a synthetic sine wave or real NASA SAMS-II telemetry, the strutural acceleration A(t) introduces a phase error Δφ(t) to the K-space lines:
+   $$S_{corrupted}(k_x, k_y) = s_{ideal}9k_x,k_y) \cdot e^{i\Delta\varphi(t)}$$
+
+3. **Low-Field Rician Noise Simulation: Operating at low B0 fields drastically reduces the Signal-to-Noise Ration(SNR). Because MRI coils acquire complex data, the background noise follows a Rician distribution. We inject independent Gaussian noise into the real(N_R) and imaginary(N_I) channels. The noise standard deviation is inversely proportional to the magnetic field B0 and the square root of scan averages (N_avg):
+   $$M_{simulated}=\sqrt{Re\{I}+N_R(0, \sigma^2))^2 + (Im\{I\}} + N_I(0, sigma^2))^2}$$
+   $$\sigma \propto \frac{1}={B_0 \sqrt{N_{avg}}}$$
+   
+   
+
+      
 
 The project relies entirely on scientific Python libraries for signal processing, mathematical modeling, and evaluation:
 
