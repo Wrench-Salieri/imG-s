@@ -1,4 +1,3 @@
-import threading
 import tempfile
 from datetime import datetime, timezone
 from functools import lru_cache
@@ -10,7 +9,7 @@ from mri.parameters import PARAMS_BY_NAME
 from mri.simulator import SpaceMRISimulator
 from mri.phantom import head_phantom, load_phantom_from_file
 from schemas import ImagePair, Metrics, SimulationResponse, Telemetry
-_SIMULATION_LOCK = threading.Lock()
+
 DATA_DIR = Path(__file__).parent / "data"
 PHANTOM_NAMES = ("phantom.png", "phantom.jpg", "phantom.jpeg", "phantom.npy")
 
@@ -53,10 +52,7 @@ def reset_phantom() -> None:
 
 
 def run_simulation(params: dict, seed: int):
-    simulator = SpaceMRISimulator(get_phantom())
-    with _SIMULATION_LOCK:
-        np.random.seed(seed)
-        return simulator.simulate(**params)
+    return SpaceMRISimulator(get_phantom()).simulate(**params, seed=seed)
 
 
 def _to_list(image: np.ndarray) -> list:

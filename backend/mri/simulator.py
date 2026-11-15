@@ -5,15 +5,15 @@ from skimage.metrics import peak_signal_noise_ratio as psnr
 from skimage.metrics import structural_similarity as ssim
 
 from mri.sams import load_trace
-from mri.parameters import ISS_RACK_MAX_POWER_W, ISS_RACK_MAX_VOLUME_M3, ISS_RACK_MAX_WEIGHT_KG
-
+from mri.parameters import (DEFAULTS, ISS_RACK_MAX_POWER_W, ISS_RACK_MAX_VOLUME_M3,
+                            ISS_RACK_MAX_WEIGHT_KG)
 
 class SpaceMRISimulator:
     def __init__(self, ideal_phantom: np.ndarray):
         self.ideal_image = ideal_phantom.astype(np.float64)
         if self.ideal_image.max() > 1.0:
             self.ideal_image /= 255.0
-        self.rows, self.cols = self.ideal_image.shape
+        self.rows = self.ideal_image.shape[0]
 
     def forward_fft(self, img: np.ndarray) -> np.ndarray:
         return fftshift(fft2(img))
@@ -56,24 +56,28 @@ class SpaceMRISimulator:
         kspace_imag = gaussian_filter(kspace.imag, sigma=blur_sigma)
         return kspace_real + 1j * kspace_imag
 
-    def apply_rician_noise(self, complex_image: np.ndarray, b0_tesla: float,
-                           scan_averaging: int) -> np.ndarray:
+    def apply_rician_noise(self, complex_image, b0_tesla, scan_averaging, rng: np.random.Generator):
         base_sigma = 0.0003 / max(b0_tesla, 0.05)
         noise_level = base_sigma / np.sqrt(max(scan_averaging, 1))
 
-        noise_real = np.random.normal(0, noise_level, complex_image.shape)
-        noise_imag = np.random.normal(0, noise_level, complex_image.shape)
+        noise_real = rng.normal(0, noise_level, complex_image.shape)
+        noise_imag = rng.normal(0, noise_level, complex_image.shape)
 
         img_rician = np.sqrt((np.real(complex_image) + noise_real) ** 2 +
                              (np.imag(complex_image) + noise_imag) ** 2)
         return img_rician
 
-    def simulate(self, b0_tesla: float = 0.15, g_level_mg: float = 30.0,
-                 vibration_freq_hz: float = 5.0,
-                 scan_averaging: int = 2, helium_pressure: float = 4.5,
-                 vibration_calibration: float = 1.5,
-                 scanner_bore_cm: float = 35.0, scanner_length_cm: float = 60.0,
-                 vibration_scenario: str | None = None):
+    def simulate(self, b0_tesla: float = DEFAULTS["b0_tesla"],
+                 g_level_mg: float = DEFAULTS["g_level_mg"],
+                 vibration_freq_hz: float = DEFAULTS["vibration_freq_hz"],
+                 scan_averaging: int = DEFAULTS["scan_averaging"],
+                 helium_pressure: float = DEFAULTS["helium_pressure"],
+                 vibration_calibration: float = DEFAULTS["vibration_calibration"],
+                 scanner_bore_cm: float = DEFAULTS["scanner_bore_cm"],
+                 scanner_length_cm: float = DEFAULTS["scanner_length_cm"],
+                 vibration_scenario: str | None = None,
+                 seed: int | None = None):
+        rng = np.random.default_rng(seed)
         kspace = self.forward_fft(self.ideal_image)
         if vibration_scenario:
             kspace = self.apply_recorded_vibration(kspace, vibration_scenario, vibration_calibration)
@@ -82,9 +86,10 @@ class SpaceMRISimulator:
                                                        vibration_calibration)
         kspace = self.apply_thermal_drift(kspace, helium_pressure)
         complex_image = ifft2(ifftshift(kspace))
-        magnitude_image = self.apply_rician_noise(complex_image, b0_tesla, scan_averaging)
+        magnitude_image = self.apply_rician_noise(complex_image, b0_tesla, scan_averaging, rng)
 
-        simulated_image = np.clip(magnitude_image / np.max(magnitude_image), 0, 1)
+        brightest = float(np.max(magnitude_image))
+        simulated_image = np.clip(magnitude_image / max(brightest, 1e-12), 0, 1)
 
         current_ssim = ssim(self.ideal_image, simulated_image, data_range=1.0)
         current_psnr = psnr(self.ideal_image, simulated_image, data_range=1.0)

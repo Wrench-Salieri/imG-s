@@ -22,7 +22,6 @@ def style_figure(fig, height=360):
     return fig
 
 def apply_compact_css():
-    import streamlit as st
     st.markdown(
         """
         <style>
@@ -36,6 +35,7 @@ def apply_compact_css():
         [data-testid="stTabs"] button {padding-top: 0.25rem; padding-bottom: 0.25rem;}
         [data-testid="stSidebarHeader"] {height: 2rem; padding-top: 0.25rem; padding-bottom: 0;}
         [data-testid="stSidebarUserContent"] {padding-top: 0 !important; margin-top: -1rem;}
+        [data-testid="stHeaderActionElements"] {display: none;}
         </style>
         """,
         unsafe_allow_html=True,

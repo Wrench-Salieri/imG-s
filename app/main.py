@@ -7,7 +7,7 @@ import streamlit as st
 from PIL import Image
 
 import api_client
-from components.theme import (TEAL, AMBER, RED, MUTED, TEXT, style_figure, apply_compact_css,
+from components.theme import (TEAL, AMBER, RED, MUTED, style_figure, apply_compact_css,
                               DESIGN_IMAGE_HEIGHT, MISSION_IMAGE_HEIGHT, SWEEP_CHART_HEIGHT)
 
 APP_DIR = Path(__file__).parent
@@ -30,6 +30,28 @@ def image_figure(z, colorscale="gray", zmin=0.0, zmax=1.0, height=DESIGN_IMAGE_H
         yaxis=dict(visible=False, autorange="reversed", scaleanchor="x"),
     )
     return fig
+
+def dual_axis_chart(df, left, right, x_title, current, key, left_color, marker=None):
+    """A line chart with one column on the left axis and another on the right axis.
+
+    left and right are (column name, label) pairs. The dotted white line marks the current setting.
+    """
+    (left_col, left_label), (right_col, right_label) = left, right
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(x=df["value"], y=df[left_col], name=left_label,
+                             mode="lines+markers", line=dict(color=left_color, width=2.5),
+                             marker=marker))
+    fig.add_trace(go.Scatter(x=df["value"], y=df[right_col], name=right_label,
+                             mode="lines+markers", yaxis="y2",
+                             line=dict(color=MUTED, dash="dash")))
+    fig.add_vline(x=current, line_dash="dot", line_color="white")
+    style_figure(fig, height=SWEEP_CHART_HEIGHT)
+    fig.update_layout(
+        xaxis=dict(title=x_title),
+        yaxis=dict(title=left_label),
+        yaxis2=dict(title=right_label, overlaying="y", side="right"),
+    )
+    st.plotly_chart(fig, key=key)
 
 def call_api(func, *args):
     try:
@@ -284,39 +306,13 @@ with tab_sweep:
         c1, c2 = st.columns(2)
         with c1:
             st.markdown("**Image quality**")
-            qfig = go.Figure()
-            qfig.add_trace(go.Scatter(x=df["value"], y=df["SSIM"], name="SSIM",
-                                      mode="lines+markers", line=dict(color=TEAL, width=2.5)))
-            qfig.add_trace(go.Scatter(x=df["value"], y=df["PSNR_dB"], name="PSNR (dB)",
-                                      mode="lines+markers", yaxis="y2",
-                                      line=dict(color=MUTED, dash="dash")))
-            qfig.add_vline(x=current, line_dash="dot", line_color="white")
-            style_figure(qfig, height=SWEEP_CHART_HEIGHT)
-            qfig.update_layout(
-                xaxis=dict(title=axis_title),
-                yaxis=dict(title="SSIM"),
-                yaxis2=dict(title="PSNR (dB)", overlaying="y", side="right"),
-            )
-            st.plotly_chart(qfig, key="sweep_quality")
-
+            dual_axis_chart(df, ("SSIM", "SSIM"), ("PSNR_dB", "PSNR (dB)"),
+                            axis_title, current, "sweep_quality", TEAL)
         with c2:
             st.markdown("**Weight and power**")
-            wfig = go.Figure()
-            wfig.add_trace(go.Scatter(x=df["value"], y=df["Weight_kg"], name="Weight (kg)",
-                                      mode="lines+markers",
-                                      line=dict(color=AMBER, width=2.5),
-                                      marker=dict(color=marker_colors, size=8)))
-            wfig.add_trace(go.Scatter(x=df["value"], y=df["Power_W"], name="Power (W)",
-                                      mode="lines+markers", yaxis="y2",
-                                      line=dict(color=MUTED, dash="dash")))
-            wfig.add_vline(x=current, line_dash="dot", line_color="white")
-            style_figure(wfig, height=SWEEP_CHART_HEIGHT)
-            wfig.update_layout(
-                xaxis=dict(title=axis_title),
-                yaxis=dict(title="Weight (kg)"),
-                yaxis2=dict(title="Power (W)", overlaying="y", side="right"),
-            )
-            st.plotly_chart(wfig, key="sweep_swap")
+            dual_axis_chart(df, ("Weight_kg", "Weight (kg)"), ("Power_W", "Power (W)"),
+                            axis_title, current, "sweep_swap", AMBER,
+                            marker=dict(color=marker_colors, size=8))
 
         st.caption("Teal markers fit an ISS rack, red ones do not. "
                    "The dotted white line is your current sidebar setting.")

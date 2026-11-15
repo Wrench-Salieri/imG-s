@@ -59,14 +59,3 @@ ISS_RACK_MAX_POWER_W = 2000.0
 # SSIM limits
 SSIM_MIN_ACCEPTABLE = 0.65
 SSIM_MAX_ACCEPTABLE = 0.85
-
-def parameter_table():
-    return [
-        {
-            "Parameter": p.name,
-            "Description": p.help,
-            "Range": f"{p.minimum} to {p.maximum} {p.unit}".strip(),
-            "Default": p.default,
-        }
-        for p in PARAMS
-    ]
