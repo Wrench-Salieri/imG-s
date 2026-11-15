@@ -46,7 +46,7 @@ The core of the engine is a Digital Signal Processing (DSP) pipeline that applie
    $$S_{corrupted}(k_x, k_y) = s_{ideal}9k_x,k_y) \cdot e^{i\Delta\varphi(t)}$$
 
 3. **Low-Field Rician Noise Simulation: Operating at low B0 fields drastically reduces the Signal-to-Noise Ration(SNR). Because MRI coils acquire complex data, the background noise follows a Rician distribution. We inject independent Gaussian noise into the real(N_R) and imaginary(N_I) channels. The noise standard deviation is inversely proportional to the magnetic field B0 and the square root of scan averages (N_avg):
-   $$M_{simulated}=\sqrt{Re\{I}+N_R(0, \sigma^2))^2 + (Im\{I\}} + N_I(0, sigma^2))^2}$$
+   $$M_{simulated}=\sqrt{Re\{I}+N_R(0, \sigma^2))^2 + (Im\{I\}} + N_I(0, \sigma^2))^2}$$
    $$\sigma \propto \frac{1}={B_0 \sqrt{N_{avg}}}$$
    
    
