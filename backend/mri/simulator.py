@@ -5,6 +5,7 @@ from skimage.metrics import peak_signal_noise_ratio as psnr
 from skimage.metrics import structural_similarity as ssim
 
 from mri.sams import load_trace
+from mri.parameters import ISS_RACK_MAX_POWER_W, ISS_RACK_MAX_VOLUME_M3, ISS_RACK_MAX_WEIGHT_KG
 
 
 class SpaceMRISimulator:
@@ -97,7 +98,9 @@ class SpaceMRISimulator:
         power_watts = (900.0 + (scanner_volume_m3 * 200.0) +
                        (g_level_mg * 10.0) + (b0_tesla * 250.0))
 
-        iss_fit_compliant = scanner_volume_m3 <= 1.2 and estimated_weight_kg <= 300.0
+        iss_fit_compliant = (scanner_volume_m3 <= ISS_RACK_MAX_VOLUME_M3
+                             and estimated_weight_kg <= ISS_RACK_MAX_WEIGHT_KG
+                             and power_watts <= ISS_RACK_MAX_POWER_W)
 
         return simulated_image, {
             "SSIM": round(float(current_ssim), 4),

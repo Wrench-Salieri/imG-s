@@ -12,7 +12,7 @@ from components.theme import TEAL, AMBER, RED, MUTED, TEXT, style_figure
 APP_DIR = Path(__file__).parent
 im = Image.open(APP_DIR / "components" / "images" / "favicon.png")
 
-st.set_page_config(page_title="imG's", page_icon=im, layout="wide")
+st.set_page_config(page_title="imaG's", page_icon=im, layout="wide")
 
 START_COMMAND = "python -m uvicorn --app-dir backend api:app --reload"
 
@@ -61,30 +61,39 @@ def show_results(simulation, meta, prefix):
     simulated = np.array(simulation["images"]["simulated"])
     max_volume = meta["iss_rack_max_volume_m3"]
     max_weight = meta["iss_rack_max_weight_kg"]
+    max_power = meta["iss_rack_max_power_w"]
     max_ssim = meta["ssim_max"]
     min_ssim = meta["ssim_min"]
 
     a, b, c = st.columns(3)
     a.metric("SSIM", f"{metrics['SSIM']:.3f}",
-             help="Structural similarity to the ideal image (1 is perfect).")
+             help="Clinical viability (Structual similarity to the ideal image, 1 is perfect).")
     b.metric("PSNR", f"{metrics['PSNR_dB']:.1f} dB",
              help="Peak signal-to-noise ratio against the ideal image.")
     c.metric("ISS rack", "Compatible" if metrics["ISS_Rack_Compatible"] else "Does not fit")
 
-    volume, weight = metrics["Volume_m3"], metrics["Weight_kg"]
+    volume, weight, power = metrics["Volume_m3"], metrics["Weight_kg"], metrics["Power_W"]
     d, e, f = st.columns(3)
     d.metric("Scanner volume", f"{volume:.3f} m³",
              delta=f"{volume - max_volume:+.3f} m³ vs rack limit", delta_color="inverse")
     e.metric("Estimated weight", f"{weight:.0f} kg",
              delta=f"{weight - max_weight:+.0f} kg vs rack limit", delta_color="inverse")
-    f.metric("Power", f"{metrics['Power_W']:,.0f} W")
+    f.metric("Power", f"{power:,.0f} W",
+             delta=f"{power - max_power:+,.0f} W vs rack limit", delta_color="inverse")
 
     if metrics["ISS_Rack_Compatible"]:
-        st.success(f"This scanner fits an ISS rack (volume up to {max_volume} m³ "
-                   f"and weight up to {max_weight:.0f} kg).")
+        st.success(f"This scanner fits an ISS rack (volume up to {max_volume} m³, "
+                   f"weight up to {max_weight:.0f} kg and power up to {max_power:,.0f} W).")
     else:
-        st.error("This scanner does not fit an ISS rack. Reduce the bore, the length "
-                 "or the field strength.")
+        too_much = []
+        if volume > max_volume:
+            too_much.append(f"volume {volume:.2f} m³ is over {max_volume} m³")
+        if weight > max_weight:
+            too_much.append(f"weight {weight:.0f} kg is over {max_weight:.0f} kg")
+        if power > max_power:
+            too_much.append(f"power {power:,.0f} W is over {max_power:,.0f} W")
+        st.error("This scanner does not fit an ISS rack: " + "; ".join(too_much) + ". "
+                 "Reduce the bore, the length, the field strength or the vibration.")
     ssim = metrics["SSIM"]
     if metrics["SSIM_Compatible"]:
         st.success(f"Scan quality is in the acceptable range "
@@ -97,11 +106,11 @@ def show_results(simulation, meta, prefix):
                    f"maximum {max_ssim:.2f}).")
 
     left, middle, right = st.columns(3)
-    left.markdown("**Ideal phantom**")
+    left.markdown("**Original Earth MRI (Ground Truth)**", help="The high resolution baseline scan uploaded by the user.")
     left.plotly_chart(image_figure(ideal), key=f"{prefix}_ideal")
-    middle.markdown("**Simulated scan**")
+    middle.markdown("**ISS Simulated MRI**", help="The predicted image quality under the current scanner design and space environment.")
     middle.plotly_chart(image_figure(simulated), key=f"{prefix}_simulated")
-    right.markdown("**Difference**")
+    right.markdown("**Artifacts Map**", help="Visualizes the structual damage caused by magnetic noise and micro-vibrations")
     diff = np.abs(ideal - simulated)
     right.plotly_chart(image_figure(diff, "magma", 0.0, max(float(diff.max()), 0.05)),
                        key=f"{prefix}_diff")
@@ -153,8 +162,8 @@ if st.sidebar.button("Use the default image"):
         
 seed = 42
 
-st.title("imG's MRI Designer (name subject to change)")
-st.caption("A portable MRI designer for the ISS.")
+st.title("imaG's MRI Designer (name subject to change)")
+st.caption("A predictive design and telemetry tool for low field MRI and micro gravity.")
 
 tab_design, tab_mission, tab_sweep = st.tabs(
     ["Engineering Design Mode", "Mission Control Mode", "Parameter sweep"]
@@ -170,7 +179,7 @@ with tab_design:
         "disturbed": "Orbital Maneuver (Thrusters), not quiet (NASA SAMS recording)",
     }
     choice = st.selectbox("Vibration source", list(SOURCES), format_func=lambda key: SOURCES[key],
-                          key="design_source")
+                          key="design_source", help="Instead of artificial math the simulator injects raw time series acceleration data from the NASA Space Acceleration Measurement System (SAMS-II) directly into the case space face matrix")
     scenario = None if choice == "custom" else choice
     if scenario:
         st.caption("The scan uses the recording. The vibration intensity and frequency sliders "
@@ -194,9 +203,8 @@ with tab_design:
 with tab_mission:
     st.subheader("Mission Control Mode")
     st.caption(
-        "Takes your design from the sidebar (field strength, helium, averaging, scanner size) "
-        "and simulates the scan under the ISS conditions of this moment. Vibration comes from "
-        "telemetry, not from the sliders."
+        "Real time telemetry override: This mode evaluates your fixed hardware design "
+        "against live (or scripted SAMS-2) space weather and structual vibration data."
     )
 
     design = {k: v for k, v in params.items() if k not in ("g_level_mg", "vibration_freq_hz")}
@@ -233,7 +241,7 @@ with tab_mission:
         t3.metric("Frequency", f"{tel['live_vibration_hz']:.1f} Hz")
         t4.metric("Effective B0", f"{mission['effective_b0_tesla']:.3f} T",
                   delta=f"{-tel['b0_penalty_tesla']:+.3f} T radiation penalty",
-                  delta_color="inverse")
+                  delta_color="inverse", help="External magnetic interference (e.g. crossing the South Atlantic Anomaly), reduces the effective signal to noise ratio.")
 
         if tel["position_live"]:
             position = f"{tel['latitude']:.1f}°, {tel['longitude']:.1f}°"

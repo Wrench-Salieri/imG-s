@@ -131,5 +131,6 @@ class ParametersResponse(BaseModel):
     groups: dict[str, list[str]]
     iss_rack_max_volume_m3: float
     iss_rack_max_weight_kg: float
+    iss_rack_max_power_w: float
     ssim_min: float
     ssim_max: float

@@ -6,6 +6,7 @@ from mri.parameters import (
     GROUPS,
     ISS_RACK_MAX_VOLUME_M3,
     ISS_RACK_MAX_WEIGHT_KG,
+    ISS_RACK_MAX_POWER_W,
     PARAMS,
     PARAMS_BY_NAME,
     SSIM_MAX_ACCEPTABLE,
@@ -63,6 +64,7 @@ def parameters():
         groups=GROUPS,
         iss_rack_max_volume_m3=ISS_RACK_MAX_VOLUME_M3,
         iss_rack_max_weight_kg=ISS_RACK_MAX_WEIGHT_KG,
+        iss_rack_max_power_w=ISS_RACK_MAX_POWER_W,
         ssim_min=SSIM_MIN_ACCEPTABLE,
         ssim_max=SSIM_MAX_ACCEPTABLE,
     )

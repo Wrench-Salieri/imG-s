@@ -30,7 +30,7 @@ PARAMS = [
           "Pressure and stability of the helium cooling in the coils."),
     Param("vibration_calibration", "Vibration sensitivity", "", 0.1, 3.0, 1.5, 0.1,
           "Calibration factor linking vibration level to phase error."),
-    Param("scanner_bore_cm", "Scanner bore diameter", "cm", 20.0, 50.0, 33.0, 1.0,
+    Param("scanner_bore_cm", "Scanner bore diameter", "cm", 28.0, 50.0, 33.0, 1.0,
           "Inner diameter of the 3D scanner chamber."),
     Param("scanner_length_cm", "Scanner length", "cm", 40.0, 100.0, 60.0, 1.0,
           "Total length of the 3D scanner."),
@@ -54,6 +54,9 @@ REQUIRED_METRIC_KEYS = (
 # ISS rack limits
 ISS_RACK_MAX_VOLUME_M3 = 1.2
 ISS_RACK_MAX_WEIGHT_KG = 300.0
+ISS_RACK_MAX_POWER_W = 2000.0 
+
+# SSIM limits
 SSIM_MIN_ACCEPTABLE = 0.65
 SSIM_MAX_ACCEPTABLE = 0.85
 
